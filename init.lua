@@ -43,6 +43,7 @@ P.S. You can delete this when you're done too. It's your config now :)
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+vim.o.scrolloff = 17
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    https://github.com/folke/lazy.nvim
@@ -92,6 +93,15 @@ require('lazy').setup({
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
+    },
+  },
+
+  {
+    "cuducos/yaml.nvim",
+    ft = { "yaml" }, -- optional
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-telescope/telescope.nvim", -- optional
     },
   },
 
@@ -200,19 +210,8 @@ require('lazy').setup({
     },
   },
 
-  {
-    -- Theme inspired by Atom
-    'navarasu/onedark.nvim',
-    priority = 1000,
-    lazy = false,
-    config = function()
-      require('onedark').setup {
-        -- Set a style preset. 'dark' is default.
-        style = 'dark', -- dark, darker, cool, deep, warm, warmer, light
-      }
-      require('onedark').load()
-    end,
-  },
+  { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+  { "ellisonleao/gruvbox.nvim", priority = 1000 , config = true },
 
   {
     -- Set lualine as statusline
@@ -249,15 +248,7 @@ require('lazy').setup({
       -- Fuzzy Finder Algorithm which requires local dependencies to be built.
       -- Only load if `make` is available. Make sure you have the system
       -- requirements installed.
-      {
-        'nvim-telescope/telescope-fzf-native.nvim',
-        -- NOTE: If you are having trouble with this installation,
-        --       refer to the README for telescope-fzf-native for more instructions.
-        build = 'make',
-        cond = function()
-          return vim.fn.executable 'make' == 1
-        end,
-      },
+      { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
     },
   },
 
@@ -290,7 +281,7 @@ require('lazy').setup({
 -- NOTE: You can change these options as you wish!
 
 -- Set highlight on search
-vim.o.hlsearch = false
+vim.o.hlsearch = true
 
 -- Make line numbers default
 vim.wo.number = true
@@ -366,6 +357,7 @@ require('telescope').setup {
   },
 }
 
+
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
 
@@ -422,9 +414,14 @@ local function telescope_live_grep_open_files()
     prompt_title = 'Live Grep in Open Files',
   }
 end
+
+local chrono_path = 'C:/Users/thomas-51/chronicle-server/'
+local chrono_app_path = chrono_path .. 'webapi/app/'
+
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
+vim.keymap.set('n', '<leader>gs', require('telescope.builtin').git_status, { desc = 'Search [G]it [S]tatus' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
@@ -432,6 +429,9 @@ vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc
 vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', { desc = '[S]earch by [G]rep on Git Root' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>v', ':e $MYVIMRC<CR>' , { desc = 'opens nvim init lua' })
+vim.keymap.set('n', '<leader>ch', ':e ' .. chrono_path .. 'docs/openapi/chronicle.yaml<CR>', { desc = 'opens nvim init lua' })
+vim.keymap.set('n', '<Esc>', ':noh<CR>')
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -603,6 +603,14 @@ local servers = {
   },
 }
 
+require('lspconfig').yamlls.setup {
+  settings = {
+    yaml = {
+      schemas = { 'https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.0/schema.json' },
+    }
+  }
+}
+
 -- Setup neovim lua configuration
 require('neodev').setup()
 
@@ -679,6 +687,33 @@ cmp.setup {
     { name = 'path' },
   },
 }
+
+vim.o.background = "dark"
+require("gruvbox").setup({
+  terminal_colors = true, -- add neovim terminal colors
+  undercurl = true,
+  underline = true,
+  bold = true,
+  italic = {
+    strings = true,
+    emphasis = true,
+    comments = true,
+    operators = false,
+    folds = true,
+  },
+  strikethrough = true,
+  invert_selection = false,
+  invert_signs = false,
+  invert_tabline = false,
+  invert_intend_guides = false,
+  inverse = true, -- invert background for search, diffs, statuslines and errors
+  contrast = "hard", -- can be "hard", "soft" or empty string
+  palette_overrides = {},
+  overrides = {},
+  dim_inactive = false,
+  transparent_mode = false,
+})
+vim.cmd([[colorscheme catppuccin-macchiato]])
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
