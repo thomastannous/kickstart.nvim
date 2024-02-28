@@ -611,6 +611,11 @@ require('lspconfig').yamlls.setup {
   }
 }
 
+require('lspconfig').gdscript.setup({
+  cmd = {'ncat', 'localhost', '6008'},
+  on_attach = on_attach
+})
+
 -- Setup neovim lua configuration
 require('neodev').setup()
 
