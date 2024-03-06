@@ -105,15 +105,6 @@ require('lazy').setup({
   },
 
   {
-    "cuducos/yaml.nvim",
-    ft = { "yaml" }, -- optional
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-telescope/telescope.nvim", -- optional
-    },
-  },
-
-  {
     -- Autocompletion
     'hrsh7th/nvim-cmp',
     dependencies = {
@@ -141,6 +132,7 @@ require('lazy').setup({
     },
   },
 
+  { 'phaazon/hop.nvim' },
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
   {
@@ -227,6 +219,8 @@ require('lazy').setup({
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
   { "ellisonleao/gruvbox.nvim", priority = 1000 , config = true },
 
+  { "chrisbra/csv.vim", name = "csv" },
+
   {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
@@ -309,6 +303,7 @@ vim.wo.number = true
 vim.wo.relativenumber = true
 vim.opt.cursorline = true
 -- vim.opt.cursorlineopt = "number"
+vim.opt.updatetime = 40
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -886,7 +881,6 @@ vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
-vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
 vim.keymap.set('n', '<leader>/', function()
   -- You can pass additional configuration to telescope to change theme, layout, etc.
   require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
@@ -905,6 +899,7 @@ end
 local chrono_path = 'C:/Users/thomas-51/chronicle-server/'
 
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
+vim.keymap.set('n', '<leader><space>', require('telescope.builtin').find_files, { desc = '[ ] Find Files' })
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
 vim.keymap.set('n', '<leader>gs', require('telescope.builtin').git_status, { desc = 'Search [G]it [S]tatus' })
@@ -918,6 +913,24 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.keymap.set('n', '<leader>v', ':e $MYVIMRC<CR>' , { desc = 'opens nvim init lua' })
 vim.keymap.set('n', '<leader>ch', ':e ' .. chrono_path .. 'docs/openapi/chronicle.yaml<CR>', { desc = 'opens nvim init lua' })
 vim.keymap.set('n', '<Esc>', ':noh<CR>')
+
+require('hop').setup()
+
+-- place this in one of your configuration file(s)
+local hop = require('hop')
+local directions = require('hop.hint').HintDirection
+vim.keymap.set('', 'f', function()
+  hop.hint_words()
+end, {remap=true})
+vim.keymap.set('', 'F', function()
+  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+end, {remap=true})
+vim.keymap.set('', 't', function()
+  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
+end, {remap=true})
+vim.keymap.set('', 'T', function()
+  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
+end, {remap=true})
 
 local harpoon = require("harpoon")
 
@@ -1110,7 +1123,7 @@ local servers = {
 require('lspconfig').yamlls.setup {
   settings = {
     yaml = {
-      schemas = { 'https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.0/schema.json' },
+      schemas = { ['https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.0/schema.json'] = "/*" },
     }
   }
 }
@@ -1163,7 +1176,7 @@ cmp.setup {
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
+      behavior = cmp.ConfirmBehavior.Insert,
       select = true,
     },
     ['<Tab>'] = cmp.mapping(function(fallback)
