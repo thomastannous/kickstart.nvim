@@ -132,7 +132,21 @@ require('lazy').setup({
     },
   },
 
-  { 'phaazon/hop.nvim' },
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    ---@type Flash.Config
+    opts = {},
+    -- stylua: ignore
+    keys = {
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+    },
+  },
+  { 'nvim-treesitter/nvim-treesitter-context' },
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim', opts = {} },
   {
@@ -209,13 +223,6 @@ require('lazy').setup({
       end,
     },
   },
-
-  {
-    "ThePrimeagen/harpoon",
-    branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" }
-  },
-
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
   { "ellisonleao/gruvbox.nvim", priority = 1000 , config = true },
 
@@ -498,7 +505,6 @@ require("catppuccin").setup({
     barbecue = { dim_dirname = true, bold_basename = true, dim_context = false, alt_background = false },
     cmp = true,
     gitsigns = true,
-    hop = true,
     illuminate = { enabled = true },
     native_lsp = { enabled = true, inlay_hints = { background = true } },
     neogit = true,
@@ -903,6 +909,7 @@ end
 
 local chrono_path = 'C:/Users/thomas-51/chronicle-server/'
 
+vim.keymap.set("n", "<Leader>rr", [[:%s/<C-r><C-w>//gc<Left><Left><Left>]])
 vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
 vim.keymap.set('n', '<leader><space>', require('telescope.builtin').find_files, { desc = '[ ] Find Files' })
 vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
@@ -919,41 +926,6 @@ vim.keymap.set('n', '<leader>v', ':e $MYVIMRC<CR>' , { desc = 'opens nvim init l
 vim.keymap.set('n', '<leader>ch', ':e ' .. chrono_path .. 'docs/openapi/chronicle.yaml<CR>', { desc = 'opens nvim init lua' })
 vim.keymap.set('n', '<Esc>', ':noh<CR>')
 
-require('hop').setup()
-
--- place this in one of your configuration file(s)
-local hop = require('hop')
-local directions = require('hop.hint').HintDirection
-vim.keymap.set('', 'f', function()
-  hop.hint_words()
-end, {remap=true})
-vim.keymap.set('', 'F', function()
-  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-end, {remap=true})
-vim.keymap.set('', 't', function()
-  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-end, {remap=true})
-vim.keymap.set('', 'T', function()
-  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-end, {remap=true})
-
-local harpoon = require("harpoon")
-
--- REQUIRED
-harpoon:setup()
--- REQUIRED
-
-vim.keymap.set("n", "<leader>a", function() harpoon:list():append() end)
-vim.keymap.set("n", "<leader>p>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
-
-vim.keymap.set("n", "<leader>h", function() harpoon:list():select(1) end)
-vim.keymap.set("n", "<leader>j", function() harpoon:list():select(2) end)
-vim.keymap.set("n", "<leader>k", function() harpoon:list():select(3) end)
-vim.keymap.set("n", "<leader>l", function() harpoon:list():select(4) end)
-
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set("n", "<C-h>", function() harpoon:list():prev() end)
-vim.keymap.set("n", "<C-l>", function() harpoon:list():next() end)
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
