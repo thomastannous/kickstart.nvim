@@ -103,7 +103,14 @@ require('lazy').setup({
       'folke/neodev.nvim',
     },
   },
-
+  {
+    "lervag/vimtex",
+    lazy = false,     -- we don't want to lazy load VimTeX
+    -- tag = "v2.15", -- uncomment to pin to a specific release
+    init = function()
+      -- VimTeX configuration goes here, e.g.
+    end
+  },
   {
     -- Autocompletion
     'hrsh7th/nvim-cmp',
@@ -346,6 +353,9 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous dia
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+
+vim.keymap.set({'n', 'v', 'i'}, "<F5>", "<cmd>term run.bat<cr>", { desc = 'Executes current dirs run.bat' })
+vim.keymap.set({'n', 'v', 'i'}, "<F6>", "<cmd>term build.bat<cr>", { desc = 'Executes current dirs build.bat' })
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
