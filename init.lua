@@ -59,6 +59,16 @@ if not vim.loop.fs_stat(lazypath) then
     lazypath,
   }
 end
+
+local function filenameFirst(_, path)
+  local tail = vim.fs.basename(path)
+  local parent = vim.fs.dirname(path)
+  parent = getLastNDirectoriesAsString(path, 3)
+  if parent == "." then return tail end
+  return string.format("%s\t\t%s", tail, parent)
+end
+
+
 vim.opt.rtp:prepend(lazypath)
 
 -- [[ Configure plugins ]]
@@ -102,6 +112,11 @@ require('lazy').setup({
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
     },
+  },
+  { "ellisonleao/gruvbox.nvim", priority = 1000 , config = true, opts = ...},
+  {
+    "seblyng/roslyn.nvim",
+    ft = { "cs" },
   },
 
   {
@@ -218,13 +233,6 @@ require('lazy').setup({
     },
   },
 
-  {
-    "ThePrimeagen/harpoon",
-    branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" }
-  },
-
-  { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
   { "ellisonleao/gruvbox.nvim", priority = 1000 , config = true },
 
   {
@@ -264,6 +272,14 @@ require('lazy').setup({
       -- requirements installed.
       { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
     },
+    opts = {
+      defaults = {
+        mappings = { i = { ['<C-u>'] = false, ['<C-d>'] = false } },
+      },
+      pickers = {
+        lsp_references = { show_line = false },
+      },
+    },
   },
 
   {
@@ -281,6 +297,29 @@ require('lazy').setup({
         require('local-highlight').setup()
       end
   },
+  {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    ---@type snacks.Config
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+      bigfile = { enabled = true },
+      dashboard = { enabled = true },
+      explorer = { enabled = true },
+      indent = { enabled = true },
+      input = { enabled = true },
+      picker = { enabled = true },
+      notifier = { enabled = true },
+      quickfile = { enabled = true },
+      scope = { enabled = true },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = true },
+      words = { enabled = true },
+    },
+  }
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -386,14 +425,6 @@ local function getLastNDirectoriesAsString(path, n)
     end
 end
 
-local function filenameFirst(_, path)
-  local tail = vim.fs.basename(path)
-  local parent = vim.fs.dirname(path)
-  parent = getLastNDirectoriesAsString(path, 3)
-  if parent == "." then return tail end
-  return string.format("%s\t\t%s", tail, parent)
-end
-
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "TelescopeResults",
   callback = function(ctx)
@@ -404,449 +435,8 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- [[ Configure Telescope ]]
--- See `:help telescope` and `:help telescope.setup()`
-require('telescope').setup {
-  defaults = {
-    mappings = {
-      i = {
-        ['<C-u>'] = false,
-        ['<C-d>'] = false,
-      },
-    },
-    path_display = filenameFirst,
-  },
-  pickers = {
-    path_display = filenameFirst,
-    lsp_references = {
-      show_line = false
-    }
-  }
-}
-
-
 -- Enable telescope fzf native, if installed
 pcall(require('telescope').load_extension, 'fzf')
-
-require("catppuccin").setup({
-  background = {
-    light = "latte",
-    dark = "mocha",
-  },
-  color_overrides = {
-    latte = {
-      rosewater = "#c14a4a",
-      flamingo = "#c14a4a",
-      red = "#c14a4a",
-      maroon = "#c14a4a",
-      pink = "#945e80",
-      mauve = "#945e80",
-      peach = "#c35e0a",
-      yellow = "#b47109",
-      green = "#6c782e",
-      teal = "#4c7a5d",
-      sky = "#4c7a5d",
-      sapphire = "#4c7a5d",
-      blue = "#45707a",
-      lavender = "#45707a",
-      text = "#654735",
-      subtext1 = "#73503c",
-      subtext0 = "#805942",
-      overlay2 = "#8c6249",
-      overlay1 = "#8c856d",
-      overlay0 = "#a69d81",
-      surface2 = "#bfb695",
-      surface1 = "#d1c7a3",
-      surface0 = "#e3dec3",
-      base = "#f9f5d7",
-      mantle = "#f0ebce",
-      crust = "#e8e3c8",
-    },
-    mocha = {
-      rosewater = "#ea6962",
-      flamingo = "#ea6962",
-      red = "#ea6962",
-      maroon = "#ea6962",
-      pink = "#d3869b",
-      mauve = "#d3869b",
-      peach = "#e78a4e",
-      yellow = "#d8a657",
-      green = "#a9b665",
-      teal = "#89b482",
-      sky = "#89b482",
-      sapphire = "#89b482",
-      blue = "#7daea3",
-      lavender = "#7daea3",
-      text = "#ebdbb2",
-      subtext1 = "#d5c4a1",
-      subtext0 = "#bdae93",
-      overlay2 = "#a89984",
-      overlay1 = "#928374",
-      overlay0 = "#595959",
-      surface2 = "#4d4d4d",
-      surface1 = "#404040",
-      surface0 = "#292929",
-      base = "#1d2021",
-      mantle = "#191b1c",
-      crust = "#141617",
-    },
-  },
-  transparent_background = false,
-  show_end_of_buffer = false,
-  integration_default = false,
-  integrations = {
-    barbecue = { dim_dirname = true, bold_basename = true, dim_context = false, alt_background = false },
-    cmp = true,
-    gitsigns = true,
-    hop = true,
-    illuminate = { enabled = true },
-    native_lsp = { enabled = true, inlay_hints = { background = true } },
-    neogit = true,
-    neotree = true,
-    semantic_tokens = true,
-    treesitter = true,
-    treesitter_context = true,
-    vimwiki = true,
-    which_key = true,
-  },
-  highlight_overrides = {
-    all = function(colors)
-      return {
-        CmpItemMenu = { fg = colors.surface2 },
-        CursorLineNr = { fg = colors.text },
-        FloatBorder = { bg = colors.base, fg = colors.surface0 },
-        GitSignsChange = { fg = colors.peach },
-        LineNr = { fg = colors.overlay0 },
-        LspInfoBorder = { link = "FloatBorder" },
-        NeoTreeDirectoryIcon = { fg = colors.subtext1 },
-        NeoTreeDirectoryName = { fg = colors.subtext1 },
-        NeoTreeFloatBorder = { link = "TelescopeResultsBorder" },
-        NeoTreeGitConflict = { fg = colors.red },
-        NeoTreeGitDeleted = { fg = colors.red },
-        NeoTreeGitIgnored = { fg = colors.overlay0 },
-        NeoTreeGitModified = { fg = colors.peach },
-        NeoTreeGitStaged = { fg = colors.green },
-        NeoTreeGitUnstaged = { fg = colors.red },
-        NeoTreeGitUntracked = { fg = colors.green },
-        NeoTreeIndent = { fg = colors.surface1 },
-        NeoTreeNormal = { bg = colors.mantle },
-        NeoTreeNormalNC = { bg = colors.mantle },
-        NeoTreeRootName = { fg = colors.subtext1, style = { "bold" } },
-        NeoTreeTabActive = { fg = colors.text, bg = colors.mantle },
-        NeoTreeTabInactive = { fg = colors.surface2, bg = colors.crust },
-        NeoTreeTabSeparatorActive = { fg = colors.mantle, bg = colors.mantle },
-        NeoTreeTabSeparatorInactive = { fg = colors.crust, bg = colors.crust },
-        NeoTreeWinSeparator = { fg = colors.base, bg = colors.base },
-        NormalFloat = { bg = colors.base },
-        Pmenu = { bg = colors.mantle, fg = "" },
-        PmenuSel = { bg = colors.surface0, fg = "" },
-        TelescopePreviewBorder = { bg = colors.crust, fg = colors.crust },
-        TelescopePreviewNormal = { bg = colors.crust },
-        TelescopePreviewTitle = { fg = colors.crust, bg = colors.crust },
-        TelescopePromptBorder = { bg = colors.surface0, fg = colors.surface0 },
-        TelescopePromptCounter = { fg = colors.mauve, style = { "bold" } },
-        TelescopePromptNormal = { bg = colors.surface0 },
-        TelescopePromptPrefix = { bg = colors.surface0 },
-        TelescopePromptTitle = { fg = colors.surface0, bg = colors.surface0 },
-        TelescopeResultsBorder = { bg = colors.mantle, fg = colors.mantle },
-        TelescopeResultsNormal = { bg = colors.mantle },
-        TelescopeResultsTitle = { fg = colors.mantle, bg = colors.mantle },
-        TelescopeSelection = { bg = colors.surface0 },
-        VertSplit = { bg = colors.base, fg = colors.surface0 },
-        WhichKeyFloat = { bg = colors.mantle },
-        YankHighlight = { bg = colors.surface2 },
-        FidgetTask = { fg = colors.subtext1 },
-        FidgetTitle = { fg = colors.peach },
-
-        IblIndent = { fg = colors.surface0 },
-        IblScope = { fg = colors.overlay0 },
-
-        Boolean = { fg = colors.mauve },
-        Number = { fg = colors.mauve },
-        Float = { fg = colors.mauve },
-
-        PreProc = { fg = colors.mauve },
-        PreCondit = { fg = colors.mauve },
-        Include = { fg = colors.mauve },
-        Define = { fg = colors.mauve },
-        Conditional = { fg = colors.red },
-        Repeat = { fg = colors.red },
-        Keyword = { fg = colors.red },
-        Typedef = { fg = colors.red },
-        Exception = { fg = colors.red },
-        Statement = { fg = colors.red },
-
-        Error = { fg = colors.red },
-        StorageClass = { fg = colors.peach },
-        Tag = { fg = colors.peach },
-        Label = { fg = colors.peach },
-        Structure = { fg = colors.peach },
-        Operator = { fg = colors.peach },
-        Title = { fg = colors.peach },
-        Special = { fg = colors.yellow },
-        SpecialChar = { fg = colors.yellow },
-        Type = { fg = colors.yellow, style = { "bold" } },
-        Function = { fg = colors.green, style = { "bold" } },
-        Delimiter = { fg = colors.subtext1 },
-        Ignore = { fg = colors.subtext1 },
-        Macro = { fg = colors.teal },
-
-        TSAnnotation = { fg = colors.mauve },
-        TSAttribute = { fg = colors.mauve },
-        TSBoolean = { fg = colors.mauve },
-        TSCharacter = { fg = colors.teal },
-        TSCharacterSpecial = { link = "SpecialChar" },
-        TSComment = { link = "Comment" },
-        TSConditional = { fg = colors.red },
-        TSConstBuiltin = { fg = colors.mauve },
-        TSConstMacro = { fg = colors.mauve },
-        TSConstant = { fg = colors.text },
-        TSConstructor = { fg = colors.green },
-        TSDebug = { link = "Debug" },
-        TSDefine = { link = "Define" },
-        TSEnvironment = { link = "Macro" },
-        TSEnvironmentName = { link = "Type" },
-        TSError = { link = "Error" },
-        TSException = { fg = colors.red },
-        TSField = { fg = colors.blue },
-        TSFloat = { fg = colors.mauve },
-        TSFuncBuiltin = { fg = colors.green },
-        TSFuncMacro = { fg = colors.green },
-        TSFunction = { fg = colors.green },
-        TSFunctionCall = { fg = colors.green },
-        TSInclude = { fg = colors.red },
-        TSKeyword = { fg = colors.red },
-        TSKeywordFunction = { fg = colors.red },
-        TSKeywordOperator = { fg = colors.peach },
-        TSKeywordReturn = { fg = colors.red },
-        TSLabel = { fg = colors.peach },
-        TSLiteral = { link = "String" },
-        TSMath = { fg = colors.blue },
-        TSMethod = { fg = colors.green },
-        TSMethodCall = { fg = colors.green },
-        TSNamespace = { fg = colors.yellow },
-        TSNone = { fg = colors.text },
-        TSNumber = { fg = colors.mauve },
-        TSOperator = { fg = colors.peach },
-        TSParameter = { fg = colors.text },
-        TSParameterReference = { fg = colors.text },
-        TSPreProc = { link = "PreProc" },
-        TSProperty = { fg = colors.blue },
-        TSPunctBracket = { fg = colors.text },
-        TSPunctDelimiter = { link = "Delimiter" },
-        TSPunctSpecial = { fg = colors.blue },
-        TSRepeat = { fg = colors.red },
-        TSStorageClass = { fg = colors.peach },
-        TSStorageClassLifetime = { fg = colors.peach },
-        TSStrike = { fg = colors.subtext1 },
-        TSString = { fg = colors.teal },
-        TSStringEscape = { fg = colors.green },
-        TSStringRegex = { fg = colors.green },
-        TSStringSpecial = { link = "SpecialChar" },
-        TSSymbol = { fg = colors.text },
-        TSTag = { fg = colors.peach },
-        TSTagAttribute = { fg = colors.green },
-        TSTagDelimiter = { fg = colors.green },
-        TSText = { fg = colors.green },
-        TSTextReference = { link = "Constant" },
-        TSTitle = { link = "Title" },
-        TSTodo = { link = "Todo" },
-        TSType = { fg = colors.yellow, style = { "bold" } },
-        TSTypeBuiltin = { fg = colors.yellow, style = { "bold" } },
-        TSTypeDefinition = { fg = colors.yellow, style = { "bold" } },
-        TSTypeQualifier = { fg = colors.peach, style = { "bold" } },
-        TSURI = { fg = colors.blue },
-        TSVariable = { fg = colors.text },
-        TSVariableBuiltin = { fg = colors.mauve },
-
-        ["@annotation"] = { link = "TSAnnotation" },
-        ["@attribute"] = { link = "TSAttribute" },
-        ["@boolean"] = { link = "TSBoolean" },
-        ["@character"] = { link = "TSCharacter" },
-        ["@character.special"] = { link = "TSCharacterSpecial" },
-        ["@comment"] = { link = "TSComment" },
-        ["@conceal"] = { link = "Grey" },
-        ["@conditional"] = { link = "TSConditional" },
-        ["@constant"] = { link = "TSConstant" },
-        ["@constant.builtin"] = { link = "TSConstBuiltin" },
-        ["@constant.macro"] = { link = "TSConstMacro" },
-        ["@constructor"] = { link = "TSConstructor" },
-        ["@debug"] = { link = "TSDebug" },
-        ["@define"] = { link = "TSDefine" },
-        ["@error"] = { link = "TSError" },
-        ["@exception"] = { link = "TSException" },
-        ["@field"] = { link = "TSField" },
-        ["@float"] = { link = "TSFloat" },
-        ["@function"] = { link = "TSFunction" },
-        ["@function.builtin"] = { link = "TSFuncBuiltin" },
-        ["@function.call"] = { link = "TSFunctionCall" },
-        ["@function.macro"] = { link = "TSFuncMacro" },
-        ["@include"] = { link = "TSInclude" },
-        ["@keyword"] = { link = "TSKeyword" },
-        ["@keyword.function"] = { link = "TSKeywordFunction" },
-        ["@keyword.operator"] = { link = "TSKeywordOperator" },
-        ["@keyword.return"] = { link = "TSKeywordReturn" },
-        ["@label"] = { link = "TSLabel" },
-        ["@math"] = { link = "TSMath" },
-        ["@method"] = { link = "TSMethod" },
-        ["@method.call"] = { link = "TSMethodCall" },
-        ["@namespace"] = { link = "TSNamespace" },
-        ["@none"] = { link = "TSNone" },
-        ["@number"] = { link = "TSNumber" },
-        ["@operator"] = { link = "TSOperator" },
-        ["@parameter"] = { link = "TSParameter" },
-        ["@parameter.reference"] = { link = "TSParameterReference" },
-        ["@preproc"] = { link = "TSPreProc" },
-        ["@property"] = { link = "TSProperty" },
-        ["@punctuation.bracket"] = { link = "TSPunctBracket" },
-        ["@punctuation.delimiter"] = { link = "TSPunctDelimiter" },
-        ["@punctuation.special"] = { link = "TSPunctSpecial" },
-        ["@repeat"] = { link = "TSRepeat" },
-        ["@storageclass"] = { link = "TSStorageClass" },
-        ["@storageclass.lifetime"] = { link = "TSStorageClassLifetime" },
-        ["@strike"] = { link = "TSStrike" },
-        ["@string"] = { link = "TSString" },
-        ["@string.escape"] = { link = "TSStringEscape" },
-        ["@string.regex"] = { link = "TSStringRegex" },
-        ["@string.special"] = { link = "TSStringSpecial" },
-        ["@symbol"] = { link = "TSSymbol" },
-        ["@tag"] = { link = "TSTag" },
-        ["@tag.attribute"] = { link = "TSTagAttribute" },
-        ["@tag.delimiter"] = { link = "TSTagDelimiter" },
-        ["@text"] = { link = "TSText" },
-        ["@text.danger"] = { link = "TSDanger" },
-        ["@text.diff.add"] = { link = "diffAdded" },
-        ["@text.diff.delete"] = { link = "diffRemoved" },
-        ["@text.emphasis"] = { link = "TSEmphasis" },
-        ["@text.environment"] = { link = "TSEnvironment" },
-        ["@text.environment.name"] = { link = "TSEnvironmentName" },
-        ["@text.literal"] = { link = "TSLiteral" },
-        ["@text.math"] = { link = "TSMath" },
-        ["@text.note"] = { link = "TSNote" },
-        ["@text.reference"] = { link = "TSTextReference" },
-        ["@text.strike"] = { link = "TSStrike" },
-        ["@text.strong"] = { link = "TSStrong" },
-        ["@text.title"] = { link = "TSTitle" },
-        ["@text.todo"] = { link = "TSTodo" },
-        ["@text.todo.checked"] = { link = "Green" },
-        ["@text.todo.unchecked"] = { link = "Ignore" },
-        ["@text.underline"] = { link = "TSUnderline" },
-        ["@text.uri"] = { link = "TSURI" },
-        ["@text.warning"] = { link = "TSWarning" },
-        ["@todo"] = { link = "TSTodo" },
-        ["@type"] = { link = "TSType" },
-        ["@type.builtin"] = { link = "TSTypeBuiltin" },
-        ["@type.definition"] = { link = "TSTypeDefinition" },
-        ["@type.qualifier"] = { link = "TSTypeQualifier" },
-        ["@uri"] = { link = "TSURI" },
-        ["@variable"] = { link = "TSVariable" },
-        ["@variable.builtin"] = { link = "TSVariableBuiltin" },
-
-        ["@lsp.type.class"] = { link = "TSType" },
-        ["@lsp.type.comment"] = { link = "TSComment" },
-        ["@lsp.type.decorator"] = { link = "TSFunction" },
-        ["@lsp.type.enum"] = { link = "TSType" },
-        ["@lsp.type.enumMember"] = { link = "TSProperty" },
-        ["@lsp.type.events"] = { link = "TSLabel" },
-        ["@lsp.type.function"] = { link = "TSFunction" },
-        ["@lsp.type.interface"] = { link = "TSType" },
-        ["@lsp.type.keyword"] = { link = "TSKeyword" },
-        ["@lsp.type.macro"] = { link = "TSConstMacro" },
-        ["@lsp.type.method"] = { link = "TSMethod" },
-        ["@lsp.type.modifier"] = { link = "TSTypeQualifier" },
-        ["@lsp.type.namespace"] = { link = "TSNamespace" },
-        ["@lsp.type.number"] = { link = "TSNumber" },
-        ["@lsp.type.operator"] = { link = "TSOperator" },
-        ["@lsp.type.parameter"] = { link = "TSParameter" },
-        ["@lsp.type.property"] = { link = "TSProperty" },
-        ["@lsp.type.regexp"] = { link = "TSStringRegex" },
-        ["@lsp.type.string"] = { link = "TSString" },
-        ["@lsp.type.struct"] = { link = "TSType" },
-        ["@lsp.type.type"] = { link = "TSType" },
-        ["@lsp.type.typeParameter"] = { link = "TSTypeDefinition" },
-        ["@lsp.type.variable"] = { link = "TSVariable" },
-      }
-    end,
-    latte = function(colors)
-      return {
-        IblIndent = { fg = colors.mantle },
-        IblScope = { fg = colors.surface1 },
-
-        LineNr = { fg = colors.surface1 },
-      }
-    end,
-  },
-})
---
--- require("catppuccin").setup({
---   integrations = {
---     cmp = true,
---     gitsigns = true,
---     nvimtree = true,
---     treesitter = true,
---     notify = false,
---     harpoon = true,
---     mini = {
---       enabled = true,
---       indentscope_color = "",
---     },
---     native_lsp = {
---       enabled = true,
---       virtual_text = {
---         errors = { "italic" },
---         hints = { "italic" },
---         warnings = { "italic" },
---         information = { "italic" },
---       },
---       underlines = {
---         errors = { "underline" },
---         hints = { "underline" },
---         warnings = { "underline" },
---         information = { "underline" },
---       },
---       inlay_hints = {
---         background = true,
---       },
---     },
---   },
-	-- color_overrides = {
-	-- 	mocha = {
-	-- 		rosewater = "#efc9c2",
-	-- 		flamingo = "#ebb2b2",
-	-- 		pink = "#f2a7de",
-	-- 		mauve = "#b889f4",
-	-- 		red = "#ea7183",
-	-- 		maroon = "#ea838c",
-	-- 		peach = "#f39967",
-	-- 		yellow = "#eaca89",
-	-- 		green = "#96d382",
-	-- 		teal = "#78cec1",
-	-- 		sky = "#91d7e3",
-	-- 		sapphire = "#68bae0",
-	-- 		blue = "#739df2",
-	-- 		lavender = "#a0a8f6",
-	-- 		text = "#b5c1f1",
-	-- 		subtext1 = "#a6b0d8",
-	-- 		subtext0 = "#959ec2",
-	-- 		overlay2 = "#848cad",
-	-- 		overlay1 = "#717997",
-	-- 		overlay0 = "#63677f",
-	-- 		surface2 = "#505469",
-	-- 		surface1 = "#3e4255",
-	-- 		surface0 = "#2c2f40",
-	-- 		base = "#1a1c2a",
-	-- 		mantle = "#141620",
-	-- 		crust = "#0e0f16",
-	-- 	},
-	-- },
-  --  color_overrides = {
-  --    all = {
-  --      base = "#000000",
-  --      mantle = "#000000",
-  --      crust = "#000000",
-  --    },
-  --  }
-  --})
 
 -- Telescope live_grep in git root
 -- Function to find the git root directory based on the current buffer's path
@@ -885,7 +475,7 @@ end
 vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
 
 -- See `:help telescope.builtin`
-vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
+vim.keymap.set('n', '<C-E>', require('telescope.builtin').oldfiles, { desc = '[e] Find recently opened files' })
 vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
 vim.keymap.set('n', '<leader>/', function()
   -- You can pass additional configuration to telescope to change theme, layout, etc.
@@ -918,24 +508,6 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.keymap.set('n', '<leader>v', ':e $MYVIMRC<CR>' , { desc = 'opens nvim init lua' })
 vim.keymap.set('n', '<leader>ch', ':e ' .. chrono_path .. 'docs/openapi/chronicle.yaml<CR>', { desc = 'opens nvim init lua' })
 vim.keymap.set('n', '<Esc>', ':noh<CR>')
-
-local harpoon = require("harpoon")
-
--- REQUIRED
-harpoon:setup()
--- REQUIRED
-
-vim.keymap.set("n", "<leader>a", function() harpoon:list():append() end)
-vim.keymap.set("n", "<C-e>", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end)
-
-vim.keymap.set("n", "<leader>h", function() harpoon:list():select(1) end)
-vim.keymap.set("n", "<leader>j", function() harpoon:list():select(2) end)
-vim.keymap.set("n", "<leader>k", function() harpoon:list():select(3) end)
-vim.keymap.set("n", "<leader>l", function() harpoon:list():select(4) end)
-
--- Toggle previous & next buffers stored within Harpoon list
-vim.keymap.set("n", "<C-h>", function() harpoon:list():prev() end)
-vim.keymap.set("n", "<C-l>", function() harpoon:list():next() end)
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -1013,13 +585,14 @@ end, 0)
 
 -- [[ Configure LSP ]]
 --  This function gets run when an LSP connects to a particular buffer.
-local on_attach = function(_, bufnr)
+local on_attach = function(client, bufnr)
   -- NOTE: Remember that lua is a real programming language, and as such it is possible
   -- to define small helper and utility functions so you don't have to repeat yourself
   -- many times.
   --
   -- In this case, we create a function that lets us more easily define mappings specific
   -- for LSP related items. It sets the mode, buffer and description for us each time.
+  print("LSP attached: ", client.name, "to buffer", bufnr)
   local nmap = function(keys, func, desc)
     if desc then
       desc = 'LSP: ' .. desc
@@ -1078,7 +651,12 @@ require('which-key').register {
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
-require('mason').setup()
+require("mason").setup({
+    registries = {
+        "github:mason-org/mason-registry",
+        "github:Crashdummyy/mason-registry",
+    },
+})
 require('mason-lspconfig').setup()
 
 -- Enable the following language servers
@@ -1107,14 +685,6 @@ local servers = {
   },
 }
 
-require('lspconfig').yamlls.setup {
-  settings = {
-    yaml = {
-      schemas = { 'https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.0/schema.json' },
-    }
-  }
-}
-
 -- Setup neovim lua configuration
 require('neodev').setup()
 
@@ -1122,23 +692,73 @@ require('neodev').setup()
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
+-- -- nvim-dap + netcoredbg
+-- local dap = require("dap")
+-- dap.adapters.coreclr = {
+--   type = "executable",
+--   command = "/usr/bin/netcoredbg",
+--   args = { "--interpreter=vscode" },
+-- }
+-- dap.configurations.cs = {
+--   {
+--     type = "coreclr",
+--     name = "Launch (netcoredbg)",
+--     request = "launch",
+--     program = function()
+--       return vim.fn.input("Path to dll: ", vim.fn.getcwd() .. "/bin/Debug/", "file")
+--     end,
+--   },
+-- }
+
 -- Ensure the servers above are installed
-local mason_lspconfig = require 'mason-lspconfig'
+local mlsp = require('mason-lspconfig')
+if type(mlsp.setup_handlers) == 'function' then
+  mlsp.setup_handlers({
+    function(server_name)
+      local ok, server = pcall(function() return require('lspconfig')[server_name] end)
+      if not ok or server == nil then
+        print("No lspconfig setup for server:", server_name)
+        return
+      end
+      server.setup {
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = servers[server_name],
+        filetypes = (servers[server_name] or {}).filetypes,
+      }
+    end
+  })
+end
 
-mason_lspconfig.setup {
-  ensure_installed = vim.tbl_keys(servers),
-}
+vim.lsp.config("roslyn", {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  config = function()
+    vim.lsp.config("roslyn", {
+      settings = {
+        ["csharp|inlay_hints"] = {
+          csharp_enable_inlay_hints_for_implicit_object_creation = true,
+          csharp_enable_inlay_hints_for_implicit_variable_types = true,
 
-mason_lspconfig.setup_handlers {
-  function(server_name)
-    require('lspconfig')[server_name].setup {
-      capabilities = capabilities,
-      on_attach = on_attach,
-      settings = servers[server_name],
-      filetypes = (servers[server_name] or {}).filetypes,
-    }
+          csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+          csharp_enable_inlay_hints_for_types = true,
+          dotnet_enable_inlay_hints_for_indexer_parameters = true,
+          dotnet_enable_inlay_hints_for_literal_parameters = true,
+          dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+          dotnet_enable_inlay_hints_for_other_parameters = true,
+          dotnet_enable_inlay_hints_for_parameters = true,
+          dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = true,
+          dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
+          dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
+        },
+        ["csharp|code_lens"] = {
+          dotnet_enable_references_code_lens = true,
+        },
+      },
+    })
   end,
-}
+})
+vim.lsp.enable("roslyn")
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
@@ -1217,7 +837,9 @@ require("gruvbox").setup({
   dim_inactive = false,
   transparent_mode = false,
 })
-vim.cmd([[colorscheme catppuccin-mocha]])
+
+vim.o.background = "dark" -- or "light" for light mode
+vim.cmd([[colorscheme gruvbox]])
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
